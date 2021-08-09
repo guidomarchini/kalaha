@@ -17,7 +17,7 @@
 	<description>Bol coding challenge, by Guido Marchini</description>
 
 	<properties>
-		<java.version>16</java.version>
+		<java.version>11</java.version>
 		<kotlin.version>1.5.21</kotlin.version>
 		<vaadin.version>14.6.5</vaadin.version>
 		<rest-assured.version>4.2.0</rest-assured.version>
@@ -125,6 +125,8 @@
 					</args>
 					<compilerPlugins>
 						<plugin>spring</plugin>
+						<plugin>no-arg</plugin>
+						<plugin>all-open</plugin>
 						<plugin>jpa</plugin>
 					</compilerPlugins>
 				</configuration>
