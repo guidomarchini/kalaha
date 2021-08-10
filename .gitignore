@@ -37,6 +37,9 @@ build/
 node_modules/
 frontend/generated/
 pnpmfile.js
+package-lock.json
+package.json
+webpack.config.js
 
 # Browser drivers for local integration tests
 drivers/
