@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class MovementManagerTest {
+    private val movementManager: MovementManager = MovementManager()
+
     @Nested
     inner class InvalidMovement {
         @Test
@@ -16,11 +18,10 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = Table.new(1, 0)
-            val movementManager: MovementManager = MovementManager(table)
 
             // act - assert
             assertThrows<InvalidMovementException> {
-                movementManager.move(pitPosition = 0, playerSide)
+                movementManager.move(table, pitPosition = 0, playerSide)
             }
         }
     }
@@ -37,7 +38,7 @@ internal class MovementManagerTest {
          *  South Kalaha: 0
          *  North Kalaha: 0
          */
-        private fun initialTable(): Table = Table.customized(
+        private fun initialTable(): Table = Table.restore(
             southernPits = mutableListOf(1, 0, 1, 0),
             northernPits = mutableListOf(0, 1, 6, 1),
             southernKalaha = 0,
@@ -49,10 +50,9 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = initialTable()
-            val movementManager: MovementManager = MovementManager(table)
 
             // act
-            movementManager.move(0, playerSide)
+            movementManager.move(table, 0, playerSide)
 
             // assert
             /**
@@ -76,10 +76,9 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = initialTable()
-            val movementManager: MovementManager = MovementManager(table)
 
             // act
-            movementManager.move(2, playerSide)
+            movementManager.move(table, 2, playerSide)
 
             // assert
             /**
@@ -111,7 +110,7 @@ internal class MovementManagerTest {
          *  South Kalaha: 0
          *  North Kalaha: 0
          */
-        private fun initialTable(): Table = Table.customized(
+        private fun initialTable(): Table = Table.restore(
             southernPits = mutableListOf(2, 0, 4, 8),
             northernPits = mutableListOf(6, 6, 6, 6),
             southernKalaha = 0,
@@ -123,10 +122,9 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = initialTable()
-            val movementManager: MovementManager = MovementManager(table)
 
             // act
-            movementManager.move(0, playerSide)
+            movementManager.move(table, 0, playerSide)
 
             // assert
             /**
@@ -150,10 +148,9 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = initialTable()
-            val movementManager: MovementManager = MovementManager(table)
 
             // act
-            movementManager.move(2, playerSide)
+            movementManager.move(table, 2, playerSide)
 
             // assert
             /**
@@ -177,10 +174,9 @@ internal class MovementManagerTest {
             // arrange
             val playerSide: Side = Side.SOUTH
             val table: Table = initialTable()
-            val movementManager: MovementManager = MovementManager(table)
 
             // act
-            movementManager.move(3, playerSide)
+            movementManager.move(table, 3, playerSide)
 
             // assert
             /**

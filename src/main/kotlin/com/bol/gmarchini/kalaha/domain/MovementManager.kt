@@ -7,7 +7,7 @@ import com.bol.gmarchini.kalaha.model.Table
 /**
  * Manages table movements
  */
-class MovementManager constructor(private val table: Table) {
+class MovementManager constructor() {
     /**
      * Makes a move from the given player.
      * A normal move would be one in which the player has stones,
@@ -20,25 +20,27 @@ class MovementManager constructor(private val table: Table) {
      *  In that case, that stone and all of the stones in the opposite pit
      *  are moved into the current player's Kalaha.
      *
+     * @param table the table in which the move will be performed
      * @param pitPosition zero based pit position to make the move
      * @param playerSide the current player's Side
      * @throws InvalidMovementException if the pit at the given position has no rocks
      */
     fun move(
+        table: Table,
         pitPosition: Int,
         playerSide: Side
     ): Table {
-        if (this.table.getPits(playerSide)[pitPosition] == 0) {
+        if (table.getPits(playerSide)[pitPosition] == 0) {
             throw InvalidMovementException()
         }
 
-        if (this.isSpecialMove(pitPosition, playerSide)) {
-            this.doSpecialMove(pitPosition, playerSide)
+        if (this.isSpecialMove(table, pitPosition, playerSide)) {
+            this.doSpecialMove(table, pitPosition, playerSide)
         } else {
-            this.doNormalMove(pitPosition, playerSide)
+            this.doNormalMove(table, pitPosition, playerSide)
         }
 
-        return this.table
+        return table
     }
 
     /**
@@ -46,10 +48,11 @@ class MovementManager constructor(private val table: Table) {
      * and the next pit is empty
      */
     private fun isSpecialMove(
+        table: Table,
         pitPosition: Int,
         playerSide: Side
     ): Boolean {
-        val currentPit = this.table.getPits(playerSide)
+        val currentPit = table.getPits(playerSide)
 
         val isLastPit: Boolean = currentPit.size == pitPosition
         val hasOneRock: Boolean = currentPit[pitPosition] == 1
@@ -63,11 +66,12 @@ class MovementManager constructor(private val table: Table) {
      * to the current player's Kalaha.
      */
     private fun doSpecialMove(
+        table: Table,
         pitPosition: Int,
         playerSide: Side
     ): Unit {
-        val currentPit: MutableList<Int> = this.table.getPits(playerSide)
-        val oppositePit: MutableList<Int> = this.table.getPits(playerSide.opposite())
+        val currentPit: MutableList<Int> = table.getPits(playerSide)
+        val oppositePit: MutableList<Int> = table.getPits(playerSide.opposite())
 
         // where do we rob?
         // pitsSize-1 is the last place. PitPosition+1 is the count from left to right.
@@ -77,7 +81,7 @@ class MovementManager constructor(private val table: Table) {
         oppositePit[indexToRob] = 0
         currentPit[pitPosition] = 0
 
-        this.table.kalahas[playerSide] = this.table.getKalaha(playerSide) + 1 + robbedStones
+        table.kalahas[playerSide] = table.getKalaha(playerSide) + 1 + robbedStones
     }
 
     /**
@@ -85,11 +89,12 @@ class MovementManager constructor(private val table: Table) {
      * leaving stones for the current player's Kalaha.
      */
     private fun doNormalMove(
+        table: Table,
         pitPosition: Int,
         playerSide: Side
     ): Unit {
         var currentSide: Side = playerSide
-        var currentPits: MutableList<Int> = this.table.getPits(playerSide)
+        var currentPits: MutableList<Int> = table.getPits(playerSide)
         var stonesToMove: Int = currentPits[pitPosition]
         currentPits[pitPosition] = 0
         var nextPosition: Int = pitPosition + 1
@@ -98,12 +103,12 @@ class MovementManager constructor(private val table: Table) {
 
             if (nextPosition >= currentPits.size) { // reached the end of the pits
                 if (currentSide == playerSide) { // player's Kalaha
-                    this.table.kalahas[currentSide] = this.table.getKalaha(currentSide) + 1
+                    table.kalahas[currentSide] = table.getKalaha(currentSide) + 1
                     stonesToMove--
                 } // else is opponent's Kalaha, so we ignore the movement
                 // change sides
                 currentSide = currentSide.opposite()
-                currentPits = this.table.getPits(currentSide)
+                currentPits = table.getPits(currentSide)
                 nextPosition = 0
 
             } else { // pit

@@ -2,15 +2,17 @@ package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.reset
-import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class KalahaGameTest {
+
+    private val movementManagerMock: MovementManager = mock()
+    private val gameOverManagerMock: GameOverManager = mock()
+    private val tableMock: Table = mock()
 
     @Nested
     inner class Initializations {
@@ -25,7 +27,6 @@ internal class KalahaGameTest {
 
             // assert
             assertThat(game.currentPlayer).isEqualTo(Side.SOUTH)
-            assertThat(game.movementManager).isNotNull
             for (side: Side in Side.values()) {
                 assertThat(game.table.pits).containsKey(side)
                 assertThat(game.table.getPits(side)).hasSize(defaultPitSize)
@@ -39,62 +40,42 @@ internal class KalahaGameTest {
 
     @Nested
     inner class GameOver {
-        private val movementManager: MovementManager = mock()
+        private val currentPlayer: Side = Side.SOUTH
+        private val game: KalahaGame = KalahaGame.restore(tableMock, currentPlayer, movementManagerMock, gameOverManagerMock)
+
+        @AfterEach
+        fun afterEach() {
+            reset(gameOverManagerMock)
+        }
 
         @Test
-        fun `game is over`() {
+        fun `delegates the functionality to game over manager`() {
             // arrange
-            val currentPlayer: Side = Side.SOUTH
-            val table: Table = Table.customized(
-                southernPits = mutableListOf(0, 0, 0, 0),
-                northernPits = mutableListOf(0, 1, 6, 1),
-                southernKalaha = 0,
-                northernKalaha = 0
-            )
-            val game: KalahaGame = KalahaGame.customizedGame(table, currentPlayer, movementManager)
+            whenever(gameOverManagerMock.isGameOver(tableMock, currentPlayer)).thenReturn(true)
 
             // act
             val isGameOver: Boolean = game.isGameOver()
 
             // assert
             assertThat(isGameOver).isTrue
-        }
-
-        @Test
-        fun `game is not over`() {
-            // arrange
-            val currentPlayer: Side = Side.NORTH
-            val table: Table = Table.customized(
-                southernPits = mutableListOf(0, 0, 0, 0),
-                northernPits = mutableListOf(0, 1, 6, 1),
-                southernKalaha = 0,
-                northernKalaha = 0
-            )
-            val game: KalahaGame = KalahaGame.customizedGame(table, currentPlayer, movementManager)
-
-            // act
-            val isGameOver: Boolean = game.isGameOver()
-
-            // assert
-            assertThat(isGameOver).isFalse
+            verify(gameOverManagerMock).isGameOver(tableMock, currentPlayer)
         }
     }
 
     @Nested
     inner class Winner {
-        private val movementManager: MovementManager = mock()
         private val currentPlayer: Side = Side.SOUTH
 
         @Test
         fun `winner is SOUTH`() {
             // arrange
-            val table: Table = Table.customized(
+            val table: Table = Table.restore(
                 southernPits = mutableListOf(1),
                 northernPits = mutableListOf(1),
                 southernKalaha = 1,
                 northernKalaha = 0
             )
-            val game: KalahaGame = KalahaGame.customizedGame(table, currentPlayer, movementManager)
+            val game: KalahaGame = KalahaGame.restore(table, currentPlayer, movementManagerMock, gameOverManagerMock)
 
 
             // act
@@ -107,13 +88,13 @@ internal class KalahaGameTest {
         @Test
         fun `winner is NORTH`() {
             // arrange
-            val table: Table = Table.customized(
+            val table: Table = Table.restore(
                 southernPits = mutableListOf(1),
                 northernPits = mutableListOf(1),
                 southernKalaha = 0,
                 northernKalaha = 1
             )
-            val game: KalahaGame = KalahaGame.customizedGame(table, currentPlayer, movementManager)
+            val game: KalahaGame = KalahaGame.restore(table, currentPlayer, movementManagerMock, gameOverManagerMock)
 
             // act
             val winner: Side? = game.winner()
@@ -125,13 +106,13 @@ internal class KalahaGameTest {
         @Test
         fun `tied game`() {
             // arrange
-            val table: Table = Table.customized(
+            val table: Table = Table.restore(
                 southernPits = mutableListOf(1),
                 northernPits = mutableListOf(1),
                 southernKalaha = 1,
                 northernKalaha = 1
             )
-            val game: KalahaGame = KalahaGame.customizedGame(table, currentPlayer, movementManager)
+            val game: KalahaGame = KalahaGame.restore(table, currentPlayer, movementManagerMock, gameOverManagerMock)
 
             // act
             val winner: Side? = game.winner()
@@ -143,66 +124,28 @@ internal class KalahaGameTest {
 
     @Nested
     inner class Moves {
-        private val movementManager: MovementManager = mock()
         private val initialPlayer: Side = Side.SOUTH
 
         @AfterEach
         fun afterEach() {
-            reset(movementManager)
+            reset(movementManagerMock, gameOverManagerMock)
         }
 
         @Test
-        fun `Movement switches player`() {
+        fun `orchestrates the movement`() {
             // arrange
-            val table: Table = Table.customized(
-                southernPits = mutableListOf(1),
-                northernPits = mutableListOf(1),
-                southernKalaha = 0,
-                northernKalaha = 0
-            )
-            val game: KalahaGame = KalahaGame.customizedGame(table, initialPlayer, movementManager)
+            val game: KalahaGame = KalahaGame.restore(tableMock, initialPlayer, movementManagerMock, gameOverManagerMock)
             val pitPosition: Int = 0
 
             // act
             game.move(pitPosition)
 
             // assert
-            verify(movementManager).move(pitPosition, initialPlayer)
+            verify(movementManagerMock).move(tableMock, pitPosition, initialPlayer)
+            verify(gameOverManagerMock).checkForGameOver(tableMock, initialPlayer.opposite())
             assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
             // game is not over yet
-            assertThat(table.getPits(initialPlayer)).isEqualTo(mutableListOf(1))
-            assertThat(table.getPits(initialPlayer.opposite())).isEqualTo(mutableListOf(1))
-            assertThat(table.getKalaha(initialPlayer)).isEqualTo(0)
-            assertThat(table.getKalaha(initialPlayer.opposite())).isEqualTo(0)
-        }
-
-        @Test
-        fun `Movement with game over`() {
-            // arrange
-            val table: Table = Table.customized(
-                southernPits = mutableListOf(2, 0, 0),
-                northernPits = mutableListOf(0, 0, 0), // next player has no moves
-                southernKalaha = 0,
-                northernKalaha = 0
-            )
-            val game: KalahaGame = KalahaGame.customizedGame(table, initialPlayer, movementManager)
-            val pitPosition: Int = 0
-
-            // act
-            game.move(pitPosition)
-
-            // assert
-            verify(movementManager).move(pitPosition, initialPlayer)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
-
-            // game over
-            assertThat(table.getPits(initialPlayer)).isEqualTo(mutableListOf(0, 0, 0))
-            assertThat(table.getPits(initialPlayer.opposite())).isEqualTo(mutableListOf(0, 0, 0))
-            assertThat(table.getKalaha(Side.SOUTH)).isEqualTo(2)
-            assertThat(table.getKalaha(Side.NORTH)).isEqualTo(0)
-
-            assertThat(game.isGameOver()).isTrue
-            assertThat(game.winner()).isEqualTo(Side.SOUTH)
+            verifyZeroInteractions(tableMock)
         }
     }
 }

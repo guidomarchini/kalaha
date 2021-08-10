@@ -1,7 +1,5 @@
 package com.bol.gmarchini.kalaha.model
 
-import com.helger.commons.annotation.VisibleForTesting
-
 /**
  * The Kalaha table.
  * It contains two sides: South and North.
@@ -47,10 +45,9 @@ class Table private constructor (
         }
 
         /**
-         * Generates a customized table
+         * Restores a table
          */
-        @VisibleForTesting
-        fun customized(
+        fun restore(
             southernPits: MutableList<Int>,
             northernPits: MutableList<Int>,
             southernKalaha: Int,

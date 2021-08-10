@@ -35,7 +35,7 @@ internal class TableTest {
         val northernKalaha: Int = 0
 
         // act
-        val table: Table = Table.customized(
+        val table: Table = Table.restore(
             southernPits, northernPits, southernKalaha, northernKalaha
         )
 

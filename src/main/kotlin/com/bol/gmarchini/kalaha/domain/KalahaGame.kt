@@ -2,7 +2,6 @@ package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
-import com.helger.commons.annotation.VisibleForTesting
 
 /**
  * Manages a Kalaha game.
@@ -10,7 +9,8 @@ import com.helger.commons.annotation.VisibleForTesting
 class KalahaGame private constructor(
     val table: Table,
     var currentPlayer: Side,
-    val movementManager: MovementManager
+    private val movementManager: MovementManager,
+    private val gameOverManager: GameOverManager
 ) {
     /**
      * Kalaha game builders
@@ -33,23 +33,25 @@ class KalahaGame private constructor(
             return KalahaGame(
                 table = table,
                 currentPlayer = Side.SOUTH,
-                movementManager = MovementManager(table)
+                movementManager = MovementManager(),
+                gameOverManager = GameOverManager()
             )
         }
 
         /**
-         * Creates a customized Kalaha game,
-         * with a given table and movement manager.
+         * Restores Kalaha game,
+         * with a given table, player and movement manager.
          */
-        @VisibleForTesting
-        fun customizedGame(
+        fun restore(
             table: Table,
             currentPlayer: Side,
-            movementManager: MovementManager
+            movementManager: MovementManager,
+            gameOverManager: GameOverManager
         ) = KalahaGame(
             table,
             currentPlayer,
-            movementManager
+            movementManager,
+            gameOverManager
         )
     }
 
@@ -57,7 +59,10 @@ class KalahaGame private constructor(
      * A game is over when the current player have all its pits empty.
      */
     fun isGameOver(): Boolean =
-        this.table.getPits(this.currentPlayer).all { it == 0 }
+        this.gameOverManager.isGameOver(
+            table = this.table,
+            currentSide = this.currentPlayer
+        )
 
     /**
      * Returns the current winner of the game.
@@ -77,29 +82,17 @@ class KalahaGame private constructor(
      * @param pitPosition zero based pit position to make the move
      */
     fun move(pitPosition: Int) {
-        this.movementManager.move(pitPosition, playerSide = this.currentPlayer)
+        this.movementManager.move(
+            table = this.table,
+            pitPosition = pitPosition,
+            playerSide = this.currentPlayer
+        )
         this.switchPlayer()
-        if (this.isGameOver()) {
-            this.gameOver()
-        }
+        this.gameOverManager.checkForGameOver(
+            table = this.table,
+            currentSide = this.currentPlayer
+        )
     }
-
-    /**
-     * On game over the current player has no stones, hence no moves left.
-     * This function picks all stones left from the opponent and moves them to its Kalaha.
-     */
-    private fun gameOver(): Unit {
-        val opponentsSide: Side = this.currentPlayer.opposite()
-        val pitsToClean: MutableList<Int> = this.table.getPits(opponentsSide)
-        val stonesLeft = (0 until pitsToClean.size).fold(0){ acc, index ->
-            val result: Int = acc + pitsToClean[index]
-            pitsToClean[index] = 0
-            result
-        }
-
-        this.table.kalahas[opponentsSide] = this.table.getKalaha(opponentsSide) + stonesLeft
-    }
-
 
     private fun switchPlayer(): Unit {
         this.currentPlayer = this.currentPlayer.opposite()
