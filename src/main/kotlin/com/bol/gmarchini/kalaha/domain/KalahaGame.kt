@@ -2,6 +2,7 @@ package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
+import com.bol.gmarchini.kalaha.model.Winner
 
 /**
  * Manages a Kalaha game.
@@ -68,10 +69,10 @@ class KalahaGame private constructor(
      * Returns the current winner of the game.
      * Null for tied game.
      */
-    fun winner(): Side? = when(this.table.getKalaha(Side.SOUTH).compareTo(this.table.getKalaha(Side.NORTH))) {
-        1 -> Side.SOUTH
-        -1 -> Side.NORTH
-        else -> null
+    fun getWinner(): Winner = when(this.table.getKalaha(Side.SOUTH).compareTo(this.table.getKalaha(Side.NORTH))) {
+        1 -> Winner.SOUTH
+        -1 -> Winner.NORTH
+        else -> Winner.TIED
     }
 
     /**

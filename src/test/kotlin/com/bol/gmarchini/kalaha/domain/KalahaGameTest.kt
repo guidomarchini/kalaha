@@ -2,6 +2,7 @@ package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
+import com.bol.gmarchini.kalaha.model.Winner
 import com.nhaarman.mockitokotlin2.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -63,7 +64,7 @@ internal class KalahaGameTest {
     }
 
     @Nested
-    inner class Winner {
+    inner class GetWinner {
         private val currentPlayer: Side = Side.SOUTH
 
         @Test
@@ -79,10 +80,10 @@ internal class KalahaGameTest {
 
 
             // act
-            val winner: Side? = game.winner()
+            val winner: Winner = game.getWinner()
 
             // assert
-            assertThat(winner).isEqualTo(Side.SOUTH)
+            assertThat(winner).isEqualTo(Winner.SOUTH)
         }
 
         @Test
@@ -97,10 +98,10 @@ internal class KalahaGameTest {
             val game: KalahaGame = KalahaGame.restore(table, currentPlayer, movementManagerMock, gameOverManagerMock)
 
             // act
-            val winner: Side? = game.winner()
+            val winner: Winner = game.getWinner()
 
             // assert
-            assertThat(winner).isEqualTo(Side.NORTH)
+            assertThat(winner).isEqualTo(Winner.NORTH)
         }
 
         @Test
@@ -115,10 +116,10 @@ internal class KalahaGameTest {
             val game: KalahaGame = KalahaGame.restore(table, currentPlayer, movementManagerMock, gameOverManagerMock)
 
             // act
-            val winner: Side? = game.winner()
+            val winner: Winner = game.getWinner()
 
             // assert
-            assertThat(winner).isNull()
+            assertThat(winner).isEqualTo(Winner.TIED)
         }
     }
 

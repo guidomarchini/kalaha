@@ -1,13 +1,13 @@
 package com.bol.gmarchini.kalaha.domain
 
-import com.bol.gmarchini.kalaha.exceptions.InvalidMovementException
+import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
 
 /**
  * Manages table movements
  */
-class MovementManager constructor() {
+class MovementManager {
     /**
      * Makes a move from the given player.
      * A normal move would be one in which the player has stones,

@@ -1,6 +1,6 @@
 package com.bol.gmarchini.kalaha.domain
 
-import com.bol.gmarchini.kalaha.exceptions.InvalidMovementException
+import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
 import org.assertj.core.api.Assertions.assertThat

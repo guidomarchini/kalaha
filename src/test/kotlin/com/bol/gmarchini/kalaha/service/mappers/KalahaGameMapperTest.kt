@@ -1,8 +1,12 @@
 package com.bol.gmarchini.kalaha.service.mappers
 
+import com.bol.gmarchini.kalaha.application.dto.KalahaGameDto
 import com.bol.gmarchini.kalaha.domain.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
+import com.bol.gmarchini.kalaha.model.Winner
 import com.bol.gmarchini.kalaha.persistence.entities.KalahaGameEntity
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -67,5 +71,48 @@ internal class KalahaGameMapperTest {
         assertThat(kalahaGame.table.getPits(Side.SOUTH)).isEqualTo(kalahaGameEntity.southernPits.toMutableList())
         assertThat(kalahaGame.table.getKalaha(Side.NORTH)).isEqualTo(kalahaGameEntity.northernKalaha)
         assertThat(kalahaGame.table.getPits(Side.NORTH)).isEqualTo(kalahaGameEntity.northernPits.toMutableList())
+    }
+
+    @Test
+    fun `transforms a domain Kalaha Game into a DTO`() {
+        // arrange
+        val kalahaGame: KalahaGame = KalahaGame.new()
+        val id: Int = 1
+
+        // act
+        val kalahaGameDto: KalahaGameDto = kalahaGameMapper.toApplication(kalahaGame, id)
+
+        // assert
+        assertThat(kalahaGameDto.id).isEqualTo(id)
+        assertThat(kalahaGameDto.currentPlayer).isEqualTo(kalahaGame.currentPlayer)
+        assertThat(kalahaGameDto.southernKalaha).isEqualTo(kalahaGame.table.getKalaha(Side.SOUTH))
+        assertThat(kalahaGameDto.southernPits).isEqualTo(kalahaGame.table.getPits(Side.SOUTH))
+        assertThat(kalahaGameDto.northernKalaha).isEqualTo(kalahaGame.table.getKalaha(Side.NORTH))
+        assertThat(kalahaGameDto.northernPits).isEqualTo(kalahaGame.table.getPits(Side.NORTH))
+        assertThat(kalahaGameDto.ended).isEqualTo(kalahaGame.isGameOver())
+        assertThat(kalahaGameDto.winner).isNull()
+    }
+
+    @Test
+    fun `transforms an ended domain Kalaha Game into a DTO`() {
+        // arrange
+        val kalahaGame: KalahaGame = spy(KalahaGame.new())
+        whenever(kalahaGame.isGameOver()).thenReturn(true)
+        val tied = Winner.TIED
+        whenever(kalahaGame.getWinner()).thenReturn(tied)
+        val id: Int = 1
+
+        // act
+        val kalahaGameDto: KalahaGameDto = kalahaGameMapper.toApplication(kalahaGame, id)
+
+        // assert
+        assertThat(kalahaGameDto.id).isEqualTo(id)
+        assertThat(kalahaGameDto.currentPlayer).isEqualTo(kalahaGame.currentPlayer)
+        assertThat(kalahaGameDto.southernKalaha).isEqualTo(kalahaGame.table.getKalaha(Side.SOUTH))
+        assertThat(kalahaGameDto.southernPits).isEqualTo(kalahaGame.table.getPits(Side.SOUTH))
+        assertThat(kalahaGameDto.northernKalaha).isEqualTo(kalahaGame.table.getKalaha(Side.NORTH))
+        assertThat(kalahaGameDto.northernPits).isEqualTo(kalahaGame.table.getPits(Side.NORTH))
+        assertThat(kalahaGameDto.ended).isEqualTo(true)
+        assertThat(kalahaGameDto.winner).isEqualTo(tied)
     }
 }
