@@ -1,12 +1,15 @@
 package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
+import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
+import org.springframework.stereotype.Component
 
 /**
- * Manages table movements
+ * MovementManager has the movements rules.
  */
+@Component
 class MovementManager {
     /**
      * Makes a move from the given player.
@@ -16,107 +19,129 @@ class MovementManager {
      *  If a Kalaha is reached, there are two possible scenarios:
      *   1) Current player's Kalaha: a stone is left there.
      *   2) Opponent's Kalaha: It's ignored
-     * A special scenario is when we move just one stone into an empty pit:
-     *  In that case, that stone and all of the stones in the opposite pit
-     *  are moved into the current player's Kalaha.
+     * A special scenario is when the last stone falls into a Kalaha or empty pit:
+     *  Empty pit: that stone and all of the stones in the opposite pit
+     *      are moved into the current player's Kalaha.
+     *  Kalaha: The player takes another turn
      *
-     * @param table the table in which the move will be performed
-     * @param pitPosition zero based pit position to make the move
-     * @param playerSide the current player's Side
-     * @throws InvalidMovementException if the pit at the given position has no rocks
+     * @param game the game where the movement is going to be made.
+     * @param pitPosition zero based pit position to make the move.
+     * @throws InvalidMovementException if the pit at the given position has no rocks.
      */
     fun move(
-        table: Table,
-        pitPosition: Int,
-        playerSide: Side
-    ): Table {
-        if (table.getPits(playerSide)[pitPosition] == 0) {
+        game: KalahaGame,
+        pitPosition: Int
+    ): Unit {
+        if (game.table.getPits(game.currentPlayer)[pitPosition] == 0) {
             throw InvalidMovementException()
         }
 
-        if (this.isSpecialMove(table, pitPosition, playerSide)) {
-            this.doSpecialMove(table, pitPosition, playerSide)
-        } else {
-            this.doNormalMove(table, pitPosition, playerSide)
-        }
-
-        return table
+        val (lastStoneSide: Side, lastPosition: Int) = this.moveStones(game, pitPosition)
+        this.applySpecialRules(game, lastStoneSide, lastPosition)
     }
 
     /**
-     * A special move is the one in which the player has 1 stone in a pit
-     * and the next pit is empty
+     * Applies special rules after the movement is done.
+     * Special rules are:
+     * * If last stone landed on owner's kalaha, then it takes another turn
+     * * If last stone landed on owner's empty pit, then moves that stone
+     *      and all of the opposite pit stones into owner's kalaha
+     *
+     * @param game The Kalaha game where the movement was done.
+     * @param lastStoneSide the side where the last stone was deposited.
+     * @param lastPosition the position where the last stone was deposited.
      */
-    private fun isSpecialMove(
-        table: Table,
-        pitPosition: Int,
-        playerSide: Side
-    ): Boolean {
-        val currentPit = table.getPits(playerSide)
+    private fun applySpecialRules(
+        game: KalahaGame,
+        lastStoneSide: Side,
+        lastPosition: Int
+    ) {
+        val sameSideAsPlayer: Boolean = game.currentPlayer == lastStoneSide
+        val isKalaha: Boolean = isKalaha(game, lastStoneSide, lastPosition)
+        val lastStoneLandedOnEmptyPit: Boolean = !isKalaha && game.table.getPits(lastStoneSide)[lastPosition] == 1
 
-        val isLastPit: Boolean = currentPit.size == pitPosition
-        val hasOneRock: Boolean = currentPit[pitPosition] == 1
-        val hasEmptyNextPit: Boolean by lazy { currentPit[pitPosition + 1] == 0 }
+        // need to rob stones?
+        if (sameSideAsPlayer && lastStoneLandedOnEmptyPit) {
+            this.robStones(game.table, lastStoneSide, lastPosition)
+        }
 
-        return !isLastPit && hasOneRock && hasEmptyNextPit
+        // !(last stone in owner's kalaha -> take another turn)
+        if (!isKalaha(game, lastStoneSide, lastPosition)) {
+            game.switchPlayer()
+        }
     }
 
     /**
      * Moves the stone from the current position and its opposite pit stack
      * to the current player's Kalaha.
      */
-    private fun doSpecialMove(
+    private fun robStones(
         table: Table,
-        pitPosition: Int,
-        playerSide: Side
+        playerSide: Side,
+        pitPosition: Int
     ): Unit {
         val currentPit: MutableList<Int> = table.getPits(playerSide)
         val oppositePit: MutableList<Int> = table.getPits(playerSide.opposite())
 
-        // where do we rob?
-        // pitsSize-1 is the last place. PitPosition+1 is the count from left to right.
-        // pitsSize - 1 - (pitPosition+1) = pitSize - pitPosition - 2
-        val indexToRob = oppositePit.size - pitPosition - 2
+        // where do we rob? pits are mirrored, so...
+        val indexToRob = oppositePit.size - 1 - pitPosition
         val robbedStones: Int = oppositePit[indexToRob]
         oppositePit[indexToRob] = 0
         currentPit[pitPosition] = 0
 
-        table.kalahas[playerSide] = table.getKalaha(playerSide) + 1 + robbedStones
+        table.addStonesToKalaha(playerSide, robbedStones+1)
     }
 
     /**
-     * Normal move, leaving one stone for each following pit in a circular way,
-     * leaving stones for the current player's Kalaha.
+     * Executes the current move.
+     * It returns a Pair with side and position that the last stone landed.
+     * @param game The Kalaha game to execute the movement.
+     * @param pitPosition the pit position to execute the movement.
      */
-    private fun doNormalMove(
-        table: Table,
-        pitPosition: Int,
-        playerSide: Side
-    ): Unit {
-        var currentSide: Side = playerSide
-        var currentPits: MutableList<Int> = table.getPits(playerSide)
-        var stonesToMove: Int = currentPits[pitPosition]
+    fun moveStones(
+        game: KalahaGame,
+        pitPosition: Int
+    ): Pair<Side, Int> {
+        val currentSide: Side = game.currentPlayer
+        val currentPits: MutableList<Int> = game.table.getPits(currentSide)
+        val nextPosition: Int = pitPosition + 1
+        val stonesToMove: Int = currentPits[pitPosition]
         currentPits[pitPosition] = 0
-        var nextPosition: Int = pitPosition + 1
 
-        while(stonesToMove > 0) { // move all rocks
+        return innerMove(game, currentSide, nextPosition, stonesToMove)
+    }
 
-            if (nextPosition >= currentPits.size) { // reached the end of the pits
-                if (currentSide == playerSide) { // player's Kalaha
-                    table.kalahas[currentSide] = table.getKalaha(currentSide) + 1
-                    stonesToMove--
-                } // else is opponent's Kalaha, so we ignore the movement
-                // change sides
-                currentSide = currentSide.opposite()
-                currentPits = table.getPits(currentSide)
-                nextPosition = 0
+    private fun innerMove(
+        game: KalahaGame,
+        currentSide: Side,
+        currentPosition: Int,
+        stonesLeft: Int
+    ): Pair<Side, Int> {
+        val isKalaha = currentPosition == game.table.getPits(currentSide).size
 
-            } else { // pit
-                currentPits[nextPosition] += 1
+        if (isKalaha && currentSide != game.currentPlayer) {
+            // kalaha reached, ignore current movement
+            return innerMove(game, currentSide.opposite(), 0, stonesLeft)
+        }
 
-                nextPosition++
-                stonesToMove--
-            }
+        if (isKalaha) {
+            game.table.addStonesToKalaha(currentSide)
+        } else {
+            game.table.getPits(currentSide)[currentPosition] += 1
+        }
+
+        return if(stonesLeft-1 == 0) {
+            Pair(currentSide, currentPosition)
+        } else {
+            val nextSide = if (isKalaha) currentSide.opposite() else currentSide
+            val nextPosition = if (isKalaha) 0 else currentPosition + 1
+            innerMove(game, nextSide, nextPosition, stonesLeft = stonesLeft - 1)
         }
     }
+
+    private fun isKalaha(
+        game: KalahaGame,
+        side: Side,
+        currentPosition: Int
+    ) = currentPosition == game.table.getPits(side).size
 }
