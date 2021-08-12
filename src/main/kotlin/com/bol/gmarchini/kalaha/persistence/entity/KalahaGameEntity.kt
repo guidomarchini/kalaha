@@ -1,7 +1,6 @@
-package com.bol.gmarchini.kalaha.persistence.entities
+package com.bol.gmarchini.kalaha.persistence.entity
 
 import com.bol.gmarchini.kalaha.model.Side
-import com.bol.gmarchini.kalaha.model.Winner
 import javax.persistence.*
 
 /**
@@ -19,10 +18,5 @@ data class KalahaGameEntity (
     val southernPits: IntArray,
     val northernPits: IntArray,
     val southernKalaha: Int,
-    val northernKalaha: Int,
-
-    // additional properties
-    val ended: Boolean,
-    @Enumerated(EnumType.STRING)
-    val winner: Winner? = null
+    val northernKalaha: Int
 )

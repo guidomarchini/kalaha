@@ -1,7 +1,7 @@
 package com.bol.gmarchini.kalaha.persistence
 
 import com.bol.gmarchini.kalaha.model.Side
-import com.bol.gmarchini.kalaha.persistence.entities.KalahaGameEntity
+import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -35,7 +35,6 @@ internal class KalahaGameRepositoryTest @Autowired constructor(
         assertThat(savedInstance.northernPits).isEqualTo(newInstance.northernPits)
         assertThat(savedInstance.southernKalaha).isEqualTo(newInstance.southernKalaha)
         assertThat(savedInstance.northernKalaha).isEqualTo(newInstance.northernKalaha)
-        assertThat(savedInstance.ended).isEqualTo(newInstance.ended)
     }
 
     @Test
@@ -63,33 +62,12 @@ internal class KalahaGameRepositoryTest @Autowired constructor(
         assertThat(repository.findByIdOrNull(entityId)).isNull()
     }
 
-    @Test
-    fun `it returns the ongoing games first`() {
-        // arrange
-        val endedKalahaGame: KalahaGameEntity = entityManager.persistAndFlush(
-            sampleEntity(ended = true)
-        )
-        val ongoingKalahaGame: KalahaGameEntity = entityManager.persistAndFlush(
-            sampleEntity(ended = false)
-        )
-
-        // act
-        val found = repository.getAllByOrderByEnded()
-
-        // assert
-        assertThat(found).isNotEmpty
-        assertThat(found).hasSize(2)
-        assertThat(found).containsExactly(ongoingKalahaGame, endedKalahaGame)
-    }
-
-
-    fun sampleEntity(ended: Boolean = false): KalahaGameEntity =
+    fun sampleEntity(): KalahaGameEntity =
         KalahaGameEntity(
             currentPlayer = Side.SOUTH,
-            southernPits = intArrayOf(),
-            northernPits = intArrayOf(),
+            southernPits = intArrayOf(1),
+            northernPits = intArrayOf(1),
             southernKalaha = 0,
-            northernKalaha = 0,
-            ended = ended
+            northernKalaha = 0
         )
 }

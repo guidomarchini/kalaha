@@ -7,86 +7,28 @@ package com.bol.gmarchini.kalaha.model
  * We could say that the Kalaha is the current amount of points the player has.
  * Each pit can have any amount of stones.
  */
-class Table private constructor (
-    val pits: Map<Side, MutableList<Int>>,
-    val kalahas: MutableMap<Side, Int>
+data class Table (
+    var id: Int? = null,
+    var southernPits: MutableList<Int>,
+    var northernPits: MutableList<Int>,
+    var southernKalaha: Int,
+    var northernKalaha: Int
 ) {
-    companion object {
-        /**
-         * Generates a new table, with the given pit size and initial stones.
-         * @param pitSize the amount of pits each side has
-         * @param initialStones the amount of stones each pit has
-         * @return a new Table
-         */
-        fun new(
-            pitSize: Int,
-            initialStones: Int
-        ): Table {
-            val pits: Map<Side, MutableList<Int>> = mapOf(
-                Pair(
-                    Side.SOUTH,
-                    MutableList(pitSize) { initialStones }
-                ),
-                Pair(
-                    Side.NORTH,
-                    MutableList(pitSize) { initialStones }
-                )
-            )
+    fun getPits(side: Side): MutableList<Int> = when(side) {
+        Side.SOUTH -> southernPits
+        Side.NORTH -> northernPits
+    }
 
-            val kalahas: MutableMap<Side, Int> = mutableMapOf(
-                Pair(Side.SOUTH, 0),
-                Pair(Side.NORTH, 0)
-            )
-
-            return Table(
-                pits = pits,
-                kalahas = kalahas
-            )
-        }
-
-        /**
-         * Restores a table
-         */
-        fun restore(
-            southernPits: MutableList<Int>,
-            northernPits: MutableList<Int>,
-            southernKalaha: Int,
-            northernKalaha: Int
-        ): Table {
-            val pits: Map<Side, MutableList<Int>> = mapOf(
-                Pair(
-                    Side.SOUTH,
-                    southernPits
-                ),
-                Pair(
-                    Side.NORTH,
-                    northernPits
-                )
-            )
-
-            val kalahas: MutableMap<Side, Int> = mutableMapOf(
-                Pair(Side.SOUTH, southernKalaha),
-                Pair(Side.NORTH, northernKalaha)
-            )
-
-            return Table(
-                pits = pits,
-                kalahas = kalahas
-            )
-        }
+    fun getKalaha(side: Side): Int = when(side) {
+        Side.SOUTH -> southernKalaha
+        Side.NORTH -> northernKalaha
     }
 
     /**
-     * Returns the pits from a given side.
-     * We always have a pit for both sides.
+     * Adds the given stones to the given Kalaha. 1 stone by default.
      */
-    fun getPits(side: Side): MutableList<Int> =
-        this.pits[side]!!
-
-    /**
-     * Returns the Kalaha from a given side.
-     * We always have a Kalaha for both sides.
-     */
-    fun getKalaha(side: Side): Int =
-        this.kalahas[side]!!
+    fun addStonesToKalaha(side: Side, stoneQuantity: Int = 1): Unit = when(side) {
+        Side.SOUTH -> this.southernKalaha += stoneQuantity
+        Side.NORTH -> this.northernKalaha += stoneQuantity
+    }
 }

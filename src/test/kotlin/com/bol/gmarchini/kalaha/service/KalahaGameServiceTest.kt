@@ -1,9 +1,10 @@
 package com.bol.gmarchini.kalaha.service
 
-import com.bol.gmarchini.kalaha.application.dto.KalahaGameDto
-import com.bol.gmarchini.kalaha.domain.KalahaGame
+import com.bol.gmarchini.kalaha.domain.GameManager
+import com.bol.gmarchini.kalaha.model.KalahaGame
+import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
-import com.bol.gmarchini.kalaha.persistence.entities.KalahaGameEntity
+import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import com.bol.gmarchini.kalaha.service.exceptions.GameNotFoundException
 import com.bol.gmarchini.kalaha.service.mappers.KalahaGameMapper
 import com.nhaarman.mockitokotlin2.*
@@ -12,20 +13,29 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.ArgumentCaptor
 import java.util.*
 
 internal class KalahaGameServiceTest {
     private val mapperMock: KalahaGameMapper = mock()
     private val repositoryMock: KalahaGameRepository = mock()
-    private val kalahaGameService: KalahaGameService = KalahaGameService(repository = repositoryMock, mapper = mapperMock)
+    private val gameManagerMock: GameManager = mock()
+    private val pitSize: Int = 6
+    private val initialStones: Int = 6
+    private val kalahaGameService: KalahaGameService = KalahaGameService(
+        repository = repositoryMock,
+        mapper = mapperMock,
+        gameManager = gameManagerMock,
+        pitSize,
+        initialStones
+    )
 
-    private val gameDomainMock: KalahaGame = mock()
+    private val gameMock: KalahaGame = mock()
     private val gameEntityMock: KalahaGameEntity = mock()
-    private val gameDtoMock: KalahaGameDto = mock()
 
     @AfterEach
     fun afterEach() {
-        reset(mapperMock, repositoryMock)
+        reset(mapperMock, repositoryMock, gameMock, gameEntityMock)
     }
 
     @Nested
@@ -33,19 +43,24 @@ internal class KalahaGameServiceTest {
         @Test
         fun `creates a new Kalaha Game`() {
             // arrange
-            whenever(mapperMock.toEntity(any(), isNull())).thenReturn(gameEntityMock)
-            whenever(repositoryMock.save(gameEntityMock)).thenReturn(gameEntityMock)
-            whenever(mapperMock.toApplication(gameEntityMock)).thenReturn(gameDtoMock)
+            whenever(repositoryMock.save(any<KalahaGameEntity>())).thenReturn(gameEntityMock)
+            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
 
             // act
-            val createdGame: KalahaGameDto = kalahaGameService.create()
+            val createdGame: KalahaGame = kalahaGameService.create()
 
             // assert
-            assertThat(createdGame).isEqualTo(gameDtoMock)
+            assertThat(createdGame).isEqualTo(gameMock)
 
-            verify(mapperMock).toEntity(any(), isNull())
-            verify(repositoryMock).save(gameEntityMock)
-            verify(mapperMock).toApplication(gameEntityMock)
+            val argumentCaptor = ArgumentCaptor.forClass(KalahaGameEntity::class.java)
+            verify(repositoryMock).save(argumentCaptor.capture())
+            val capturedGame: KalahaGameEntity = argumentCaptor.value
+            assertThat(capturedGame.southernPits).hasSize(pitSize)
+            assertThat(capturedGame.southernPits.asList()).allMatch { it == initialStones }
+            assertThat(capturedGame.northernPits).hasSize(pitSize)
+            assertThat(capturedGame.northernPits.asList()).allMatch { it == initialStones }
+            assertThat(capturedGame.currentPlayer).isEqualTo(Side.SOUTH)
+            verify(mapperMock).toDomain(gameEntityMock)
         }
     }
 
@@ -54,17 +69,17 @@ internal class KalahaGameServiceTest {
         @Test
         fun `gets all Kalaha Game`() {
             // arrange
-            whenever(repositoryMock.getAllByOrderByEnded()).thenReturn(listOf(gameEntityMock))
-            whenever(mapperMock.toApplication(gameEntityMock)).thenReturn(gameDtoMock)
+            whenever(repositoryMock.findAll()).thenReturn(listOf(gameEntityMock))
+            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
 
             // act
-            val allGames: List<KalahaGameDto> = kalahaGameService.getAll()
+            val allGames: List<KalahaGame> = kalahaGameService.getAll()
 
             // assert
-            assertThat(allGames).containsExactly(gameDtoMock)
+            assertThat(allGames).containsExactly(gameMock)
 
-            verify(repositoryMock).getAllByOrderByEnded()
-            verify(mapperMock).toApplication(gameEntityMock)
+            verify(repositoryMock).findAll()
+            verify(mapperMock).toDomain(gameEntityMock)
         }
     }
 
@@ -88,16 +103,16 @@ internal class KalahaGameServiceTest {
         fun `existing Kalaha game`() {
             // arrange
             whenever(repositoryMock.findById(id)).thenReturn(Optional.of(gameEntityMock))
-            whenever(mapperMock.toApplication(gameEntityMock)).thenReturn(gameDtoMock)
+            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
 
             // act
-            val game: KalahaGameDto = kalahaGameService.getById(id)
+            val game: KalahaGame = kalahaGameService.getById(id)
 
             // assert
-            assertThat(game).isEqualTo(gameDtoMock)
+            assertThat(game).isEqualTo(gameMock)
 
             verify(repositoryMock).findById(id)
-            verify(mapperMock).toApplication(gameEntityMock)
+            verify(mapperMock).toDomain(gameEntityMock)
         }
     }
 
@@ -113,7 +128,7 @@ internal class KalahaGameServiceTest {
 
             // act - assert
             assertThrows<GameNotFoundException> {
-                kalahaGameService.move(id, pitPosition)
+                kalahaGameService.move(id, pitPosition, "")
             }
             verify(repositoryMock).findById(id)
         }
@@ -122,23 +137,20 @@ internal class KalahaGameServiceTest {
         fun `existing Kalaha game`() {
             // arrange
             whenever(repositoryMock.findById(id)).thenReturn(Optional.of(gameEntityMock))
-            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameDomainMock)
-            whenever(mapperMock.toEntity(gameDomainMock, id)).thenReturn(gameEntityMock)
-            whenever(mapperMock.toApplication(gameEntityMock)).thenReturn(gameDtoMock)
+            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
+            whenever(mapperMock.toEntity(gameMock)).thenReturn(gameEntityMock)
             whenever(repositoryMock.save(gameEntityMock)).thenReturn(gameEntityMock)
 
             // act
-            val game: KalahaGameDto = kalahaGameService.move(id, pitPosition)
+            val game: KalahaGame = kalahaGameService.move(id, pitPosition, "")
 
             // assert
-            assertThat(game).isEqualTo(gameDtoMock)
+            assertThat(game).isEqualTo(gameMock)
 
             verify(repositoryMock).findById(id)
-            verify(mapperMock).toDomain(gameEntityMock)
-            verify(gameDomainMock).move(pitPosition)
-            verify(mapperMock).toEntity(gameDomainMock, id)
+            verify(gameManagerMock).move(gameMock, pitPosition)
             verify(repositoryMock).save(gameEntityMock)
-            verify(mapperMock).toApplication(gameEntityMock)
+            verify(mapperMock).toDomain(gameEntityMock)
         }
     }
 }

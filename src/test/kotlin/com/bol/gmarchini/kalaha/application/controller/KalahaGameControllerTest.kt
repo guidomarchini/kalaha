@@ -1,16 +1,11 @@
 package com.bol.gmarchini.kalaha.application.controller
 
 import com.bol.gmarchini.kalaha.application.dto.GameMovementDto
-import com.bol.gmarchini.kalaha.application.dto.KalahaGameDto
-import com.bol.gmarchini.kalaha.domain.GameOverManager
-import com.bol.gmarchini.kalaha.domain.KalahaGame
-import com.bol.gmarchini.kalaha.domain.MovementManager
+import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
-import com.bol.gmarchini.kalaha.model.Table
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
-import com.bol.gmarchini.kalaha.persistence.entities.KalahaGameEntity
+import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import com.bol.gmarchini.kalaha.service.KalahaGameService
-import com.bol.gmarchini.kalaha.service.mappers.KalahaGameMapper
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -30,7 +25,6 @@ import org.springframework.http.HttpStatus
 internal class KalahaGameControllerTest (
     @Autowired val repository: KalahaGameRepository,
     @Autowired val service: KalahaGameService,
-    @Autowired val mapper: KalahaGameMapper,
     @LocalServerPort val port: Int
 ) {
     @BeforeAll
@@ -46,8 +40,8 @@ internal class KalahaGameControllerTest (
     @Test
     fun `get all kalaha games`() {
         // arrange
-        val kalahaGame1: KalahaGameDto = generateGame()
-        val kalahaGame2: KalahaGameDto = generateGame()
+        val kalahaGame1: KalahaGame = generateGame()
+        val kalahaGame2: KalahaGame = generateGame()
 
         // act
         given()
@@ -65,7 +59,7 @@ internal class KalahaGameControllerTest (
         @Test
         fun `get a specific kalaha game`() {
             // arrange
-            val kalahaGame: KalahaGameDto = generateGame()
+            val kalahaGame: KalahaGame = generateGame()
 
             // act
             given()
@@ -119,21 +113,16 @@ internal class KalahaGameControllerTest (
          *  North Kalaha: 0
          */
         private fun generateInitialGame(): Int {
-            val table = Table.restore(
-                southernPits = mutableListOf(2, 0, 4, 8),
-                northernPits = mutableListOf(6, 6, 6, 6),
+
+            val kalahaGame: KalahaGameEntity =  KalahaGameEntity(
+                currentPlayer = Side.SOUTH,
+                southernPits = intArrayOf(2, 0, 4, 8),
+                northernPits = intArrayOf(6, 6, 6, 6),
                 southernKalaha = 0,
                 northernKalaha = 0
             )
 
-            val kalahaGame: KalahaGame =  KalahaGame.restore(
-                table,
-                currentPlayer = Side.SOUTH,
-                MovementManager(),
-                GameOverManager()
-            )
-
-            return repository.save(mapper.toEntity(kalahaGame)).id!!
+            return repository.save(kalahaGame).id!!
         }
 
         @Test
@@ -154,10 +143,10 @@ internal class KalahaGameControllerTest (
 
             val gameAfterMovement: KalahaGameEntity? = repository.findByIdOrNull(gameId)
             assertThat(gameAfterMovement).isNotNull
-            assertThat(gameAfterMovement?.southernPits).isEqualTo(intArrayOf(0, 1, 5, 8))
-            assertThat(gameAfterMovement?.northernPits).isEqualTo(intArrayOf(6, 6, 6, 6))
-            assertThat(gameAfterMovement?.southernKalaha).isEqualTo(0)
-            assertThat(gameAfterMovement?.northernKalaha).isEqualTo(0)
+            assertThat(gameAfterMovement!!.southernPits).isEqualTo(intArrayOf(0, 1, 5, 8))
+            assertThat(gameAfterMovement.northernPits).isEqualTo(intArrayOf(6, 6, 6, 6))
+            assertThat(gameAfterMovement.southernKalaha).isEqualTo(0)
+            assertThat(gameAfterMovement.northernKalaha).isEqualTo(0)
         }
 
         @Test
@@ -178,6 +167,6 @@ internal class KalahaGameControllerTest (
     }
 
 
-    fun generateGame(): KalahaGameDto =
+    fun generateGame(): KalahaGame =
         service.create()
 }

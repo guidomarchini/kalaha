@@ -1,9 +1,10 @@
 package com.bol.gmarchini.kalaha.service
 
-import com.bol.gmarchini.kalaha.application.dto.KalahaGameDto
-import com.bol.gmarchini.kalaha.domain.KalahaGame
+import com.bol.gmarchini.kalaha.domain.GameManager
+import com.bol.gmarchini.kalaha.model.KalahaGame
+import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
-import com.bol.gmarchini.kalaha.persistence.entities.KalahaGameEntity
+import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import com.bol.gmarchini.kalaha.service.exceptions.GameNotFoundException
 import com.bol.gmarchini.kalaha.service.mappers.KalahaGameMapper
 import org.slf4j.Logger
@@ -20,7 +21,10 @@ import org.springframework.stereotype.Service
 @Service
 class KalahaGameService @Autowired constructor(
     val repository: KalahaGameRepository,
-    val mapper: KalahaGameMapper
+    val mapper: KalahaGameMapper,
+    val gameManager: GameManager,
+    @Value("\${kalaha.pit.size}") val pitSize: Int,
+    @Value("\${kalaha.pit.initialStones}") val initialStones: Int
 ) {
     companion object {
         @JvmStatic
@@ -30,24 +34,29 @@ class KalahaGameService @Autowired constructor(
     /**
      * Creates a new Kalaha game.
      */
-    fun create(): KalahaGameDto {
+    fun create(): KalahaGame {
         logger.info("Creating a new Kalaha game")
-        val newGame: KalahaGame = KalahaGame.new()
-
-        val kalahaGameEntity: KalahaGameEntity = this.repository.save(
-            this.mapper.toEntity(newGame)
+        val newGame: KalahaGameEntity = KalahaGameEntity(
+            currentPlayer = Side.SOUTH,
+            southernPits = IntArray(pitSize) { initialStones },
+            northernPits = IntArray(pitSize) { initialStones },
+            southernKalaha = 0,
+            northernKalaha = 0
         )
 
-        return this.mapper.toApplication(kalahaGameEntity)
+        val savedGame: KalahaGameEntity = this.repository.save(newGame)
+        logger.info("Created Kalaha game. Id: ${savedGame.id}")
+
+        return this.mapper.toDomain(savedGame)
     }
 
     /**
-     * Gets all Kalaha Games, ordered by ongoing first.
+     * Gets all Kalaha Games.
      */
-    fun getAll(): List<KalahaGameDto> {
+    fun getAll(): List<KalahaGame> {
         logger.info("Fetching all Kalaha games")
-        return this.repository.getAllByOrderByEnded().map {
-            this.mapper.toApplication(it)
+        return this.repository.findAll().map {
+            this.mapper.toDomain(it)
         }
     }
 
@@ -56,11 +65,11 @@ class KalahaGameService @Autowired constructor(
      * @param gameId the game id
      * @return The Kalaha Game DTO. Null if the kalaha is not found
      */
-    fun getById(gameId: Int): KalahaGameDto {
+    fun getById(gameId: Int): KalahaGame {
         logger.info("Getting Kalaha game with id $gameId")
-        val entity: KalahaGameEntity? = this.repository.findByIdOrNull(gameId)
-        checkNotNull(entity) { throw GameNotFoundException(gameId) }
-        return this.mapper.toApplication(entity)
+        val game: KalahaGameEntity? = this.repository.findByIdOrNull(gameId)
+        checkNotNull(game) { throw GameNotFoundException(gameId) }
+        return this.mapper.toDomain(game)
     }
 
     /**
@@ -71,16 +80,14 @@ class KalahaGameService @Autowired constructor(
      */
     fun move(
         gameId: Int,
-        pitPosition: Int
-    ): KalahaGameDto {
-        val entity: KalahaGameEntity? = this.repository.findByIdOrNull(gameId)
-        checkNotNull(entity) { throw GameNotFoundException(gameId) }
-
-        val game: KalahaGame = this.mapper.toDomain(entity)
+        pitPosition: Int,
+        requestingPlayer: String
+    ): KalahaGame {
+        val game: KalahaGame = this.getById(gameId)
         logger.info("[$gameId] executing move. Current player=[${game.currentPlayer}], pitPosition=[$pitPosition]")
-        game.move(pitPosition)
-        val updatedGame: KalahaGameEntity = this.repository.save(this.mapper.toEntity(game, gameId))
+        gameManager.move(game, pitPosition)
+        this.repository.save(this.mapper.toEntity(game))
 
-        return this.mapper.toApplication(updatedGame)
+        return game
     }
 }
