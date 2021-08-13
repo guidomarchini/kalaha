@@ -8,7 +8,6 @@ package com.bol.gmarchini.kalaha.model
  * Each pit can have any amount of stones.
  */
 data class Table (
-    var id: Int? = null,
     var southernPits: MutableList<Int>,
     var northernPits: MutableList<Int>,
     var southernKalaha: Int,
