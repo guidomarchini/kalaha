@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AuthService @Autowired constructor(
-    private val userRepository: UserRepository
+    private val userService: UserService
 ) {
 
     /**
@@ -23,7 +23,7 @@ class AuthService @Autowired constructor(
      * This stores the user into current session and creates the routes for that user.
      */
     fun authenticate(username: String, password: String): Unit {
-        val user: User? = userRepository.getByUsername(username)
+        val user: User? = userService.getUser(username)
         if (user != null && user.checkPassword(password)) {
             VaadinSession.getCurrent().setAttribute(User::class.java, user)
             createRoutes(user.role)
