@@ -12,7 +12,9 @@ data class KalahaGameEntity (
     val id: Int? = null,
 
     @Enumerated(EnumType.STRING)
-    val currentPlayer: Side,
+    val currentSide: Side,
+    val southernPlayer: String,
+    val northernPlayer: String,
 
     // table properties
     val southernPits: IntArray,

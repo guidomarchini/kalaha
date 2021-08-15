@@ -13,7 +13,7 @@ class GameOverManager {
      * A game is over when the current player have all its pits empty.
      */
     fun isGameOver(game: KalahaGame): Boolean =
-        game.table.getPits(game.currentPlayer).all { it == 0 }
+        game.table.getPits(game.currentSide).all { it == 0 }
 
     /**
      * Checks for a game over scenario for the current player (no more rocks on the pits = no moves left)
@@ -29,7 +29,7 @@ class GameOverManager {
      * This function picks all stones left from the opponent and moves them to its Kalaha.
      */
     private fun handleGameOver(game: KalahaGame): Unit {
-        val opponentsSide: Side = game.currentPlayer.opposite()
+        val opponentsSide: Side = game.currentSide.opposite()
         val pitsToClean: MutableList<Int> = game.table.getPits(opponentsSide)
         // sets all pits to 0,
         val stonesLeft = (0 until pitsToClean.size).fold(0){ acc, index ->

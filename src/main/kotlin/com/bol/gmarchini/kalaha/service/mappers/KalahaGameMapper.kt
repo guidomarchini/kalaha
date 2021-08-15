@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.service.mappers
 
 import com.bol.gmarchini.kalaha.model.KalahaGame
+import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
 import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import org.springframework.stereotype.Component
@@ -18,7 +19,9 @@ class KalahaGameMapper {
     fun toDomain(kalahaGameEntity: KalahaGameEntity): KalahaGame =
         KalahaGame(
             id = kalahaGameEntity.id,
-            currentPlayer = kalahaGameEntity.currentPlayer,
+            currentSide = kalahaGameEntity.currentSide,
+            southernPlayer = kalahaGameEntity.southernPlayer,
+            northernPlayer = kalahaGameEntity.northernPlayer,
             table = Table(
                 southernPits = kalahaGameEntity.southernPits.toMutableList(),
                 northernPits = kalahaGameEntity.northernPits.toMutableList(),
@@ -33,10 +36,12 @@ class KalahaGameMapper {
     fun toEntity(kalahaGame: KalahaGame): KalahaGameEntity =
         KalahaGameEntity(
             id = kalahaGame.id,
-            currentPlayer = kalahaGame.currentPlayer,
-            southernPits = kalahaGame.table.southernPits.toIntArray(),
-            northernPits = kalahaGame.table.northernPits.toIntArray(),
-            southernKalaha = kalahaGame.table.southernKalaha,
-            northernKalaha = kalahaGame.table.northernKalaha
+            currentSide = kalahaGame.currentSide,
+            southernPlayer = kalahaGame.southernPlayer,
+            northernPlayer = kalahaGame.northernPlayer,
+            southernPits = kalahaGame.table.getPits(Side.SOUTH).toIntArray(),
+            northernPits = kalahaGame.table.getPits(Side.NORTH).toIntArray(),
+            southernKalaha = kalahaGame.table.getKalaha(Side.SOUTH),
+            northernKalaha = kalahaGame.table.getKalaha(Side.NORTH)
         )
 }

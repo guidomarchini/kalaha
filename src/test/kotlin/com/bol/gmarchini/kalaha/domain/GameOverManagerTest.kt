@@ -1,7 +1,7 @@
 package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.KalahaGame
-import com.bol.gmarchini.kalaha.model.KalahaGameBuilder
+import com.bol.gmarchini.kalaha.utils.KalahaGameBuilder
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.model.Table
 import org.assertj.core.api.Assertions.assertThat

@@ -2,6 +2,7 @@ package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.*
+import com.bol.gmarchini.kalaha.utils.KalahaGameBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -46,7 +47,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(2, 0, 4, 8),
                 northernPits = mutableListOf(6, 6, 6, 6)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -66,7 +67,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).isEqualTo(mutableListOf(6, 6, 6, 6))
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(0)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
 
         @Test
@@ -84,7 +85,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(2, 0, 4, 8),
                 northernPits = mutableListOf(6, 6, 6, 6)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 2)
@@ -104,7 +105,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).isEqualTo(mutableListOf(7, 7, 6, 6))
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(1)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
 
         @Test
@@ -122,7 +123,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(2, 0, 4, 8),
                 northernPits = mutableListOf(6, 6, 6, 6)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 3)
@@ -141,7 +142,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).isEqualTo(mutableListOf(7, 7, 7, 7))
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(1)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
     }
 
@@ -161,7 +162,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(1, 0),
                 northernPits = mutableListOf(6, 1)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -179,7 +180,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).containsExactly(0, 1)
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(7)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
 
         @Test
@@ -196,7 +197,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(1, 0),
                 northernPits = mutableListOf(0, 1)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -214,7 +215,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).containsExactly(0, 1)
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(1)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
 
         @Test
@@ -232,7 +233,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(2, 1, 0),
                 northernPits = mutableListOf(6, 1, 1)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -251,7 +252,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).containsExactly(0, 1, 1)
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(7)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
 
         @Test
@@ -269,7 +270,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(4, 0, 0),
                 northernPits = mutableListOf(0, 1, 1)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -288,7 +289,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).containsExactly(1, 1, 1)
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(1)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer.opposite())
+            assertThat(game.currentSide).isEqualTo(initialPlayer.opposite())
         }
     }
 
@@ -308,7 +309,7 @@ internal class MovementManagerTest {
                 southernPits = mutableListOf(2, 2),
                 northernPits = mutableListOf(2, 2)
             )
-            val initialPlayer: Side = game.currentPlayer
+            val initialPlayer: Side = game.currentSide
 
             // act
             movementManager.move(game, 0)
@@ -326,7 +327,7 @@ internal class MovementManagerTest {
             assertThat(game.table.getPits(Side.NORTH)).containsExactly(2, 2)
             assertThat(game.table.getKalaha(Side.SOUTH)).isEqualTo(1)
             assertThat(game.table.getKalaha(Side.NORTH)).isEqualTo(0)
-            assertThat(game.currentPlayer).isEqualTo(initialPlayer)
+            assertThat(game.currentSide).isEqualTo(initialPlayer)
         }
     }
 

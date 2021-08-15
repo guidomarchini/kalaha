@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.domain
 
 import com.bol.gmarchini.kalaha.model.*
+import com.bol.gmarchini.kalaha.utils.KalahaGameBuilder
 import com.nhaarman.mockitokotlin2.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach

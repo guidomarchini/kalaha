@@ -32,7 +32,7 @@ class MovementManager {
         game: KalahaGame,
         pitPosition: Int
     ): Unit {
-        if (game.table.getPits(game.currentPlayer)[pitPosition] == 0) {
+        if (game.table.getPits(game.currentSide)[pitPosition] == 0) {
             throw InvalidMovementException()
         }
 
@@ -56,7 +56,7 @@ class MovementManager {
         lastStoneSide: Side,
         lastPosition: Int
     ) {
-        val sameSideAsPlayer: Boolean = game.currentPlayer == lastStoneSide
+        val sameSideAsPlayer: Boolean = game.currentSide == lastStoneSide
         val isKalaha: Boolean = isKalaha(game, lastStoneSide, lastPosition)
         val lastStoneLandedOnEmptyPit: Boolean = !isKalaha && game.table.getPits(lastStoneSide)[lastPosition] == 1
 
@@ -102,7 +102,7 @@ class MovementManager {
         game: KalahaGame,
         pitPosition: Int
     ): Pair<Side, Int> {
-        val currentSide: Side = game.currentPlayer
+        val currentSide: Side = game.currentSide
         val currentPits: MutableList<Int> = game.table.getPits(currentSide)
         val nextPosition: Int = pitPosition + 1
         val stonesToMove: Int = currentPits[pitPosition]
@@ -119,7 +119,7 @@ class MovementManager {
     ): Pair<Side, Int> {
         val isKalaha = currentPosition == game.table.getPits(currentSide).size
 
-        if (isKalaha && currentSide != game.currentPlayer) {
+        if (isKalaha && currentSide != game.currentSide) {
             // kalaha reached, ignore current movement
             return innerMove(game, currentSide.opposite(), 0, stonesLeft)
         }

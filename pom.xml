@@ -107,6 +107,13 @@
 			<version>${mockito-kotlin.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- needed for application testing -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

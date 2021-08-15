@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.application.controller
 
 import com.bol.gmarchini.kalaha.application.dto.GameMovementDto
+import com.bol.gmarchini.kalaha.application.dto.NewGameDto
 import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.service.KalahaGameService
 import org.springframework.http.HttpStatus
@@ -12,8 +13,11 @@ class KalahaGameController constructor(
     private val kalahaGameService: KalahaGameService
 ) {
     @GetMapping
-    fun getAllKalahaGames(): List<KalahaGame> {
-        return this.kalahaGameService.getAll()
+    fun getAllKalahaGames(@RequestParam(required = false) username: String?): List<KalahaGame> {
+        return if (username != null)
+            this.kalahaGameService.getGamesOfPlayer(username)
+        else
+            this.kalahaGameService.getAll()
     }
 
     @GetMapping("/{gameId}")
@@ -23,8 +27,11 @@ class KalahaGameController constructor(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun createGame(): KalahaGame {
-        return this.kalahaGameService.create()
+    fun createGame(@RequestBody newGameDto: NewGameDto): KalahaGame {
+        return this.kalahaGameService.create(
+            southernPlayer = newGameDto.southernPlayer,
+            northernPlayer = newGameDto.northernPlayer
+        )
     }
 
     @PutMapping("/{gameId}")
@@ -32,6 +39,6 @@ class KalahaGameController constructor(
         @PathVariable gameId: Int,
         @RequestBody movement: GameMovementDto
     ): KalahaGame {
-        return this.kalahaGameService.move(gameId, pitPosition = movement.pitPosition, "")
+        return this.kalahaGameService.move(gameId, pitPosition = movement.pitPosition, movement.executingPlayer)
     }
 }

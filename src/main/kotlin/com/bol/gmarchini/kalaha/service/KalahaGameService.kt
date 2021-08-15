@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.service
 
 import com.bol.gmarchini.kalaha.domain.GameManager
+import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
@@ -32,12 +33,19 @@ class KalahaGameService @Autowired constructor(
     }
 
     /**
-     * Creates a new Kalaha game.
+     * Creates a new Kalaha game for the given Users' usernames
+     * @param southernPlayer the southern player's username
+     * @param northernPlayer the northern player's username
      */
-    fun create(): KalahaGame {
+    fun create(
+        southernPlayer: String,
+        northernPlayer: String
+    ): KalahaGame {
         logger.info("Creating a new Kalaha game")
         val newGame: KalahaGameEntity = KalahaGameEntity(
-            currentPlayer = Side.SOUTH,
+            currentSide = Side.SOUTH,
+            southernPlayer = southernPlayer,
+            northernPlayer = northernPlayer,
             southernPits = IntArray(pitSize) { initialStones },
             northernPits = IntArray(pitSize) { initialStones },
             southernKalaha = 0,
@@ -56,6 +64,17 @@ class KalahaGameService @Autowired constructor(
     fun getAll(): List<KalahaGame> {
         logger.info("Fetching all Kalaha games")
         return this.repository.findAll().map {
+            this.mapper.toDomain(it)
+        }
+    }
+
+    /**
+     * Gets all the games being player for the given username.
+     * @param username the User's username
+     */
+    fun getGamesOfPlayer(username: String): List<KalahaGame> {
+        logger.info("Fetching all games of player $username")
+        return this.repository.getGamesFromPlayer(username).map {
             this.mapper.toDomain(it)
         }
     }
@@ -81,10 +100,14 @@ class KalahaGameService @Autowired constructor(
     fun move(
         gameId: Int,
         pitPosition: Int,
-        requestingPlayer: String
+        executingPlayer: String
     ): KalahaGame {
         val game: KalahaGame = this.getById(gameId)
-        logger.info("[$gameId] executing move. Current player=[${game.currentPlayer}], pitPosition=[$pitPosition]")
+        logger.info("[$gameId] executing move. Current player=[${game.currentSide}], pitPosition=[$pitPosition]")
+        if (game.currentPlayer() != executingPlayer) {
+            throw InvalidMovementException()
+        }
+
         gameManager.move(game, pitPosition)
         this.repository.save(this.mapper.toEntity(game))
 

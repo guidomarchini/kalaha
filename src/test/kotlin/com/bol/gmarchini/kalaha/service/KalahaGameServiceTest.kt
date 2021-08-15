@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.service
 
 import com.bol.gmarchini.kalaha.domain.GameManager
+import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
@@ -45,9 +46,11 @@ internal class KalahaGameServiceTest {
             // arrange
             whenever(repositoryMock.save(any<KalahaGameEntity>())).thenReturn(gameEntityMock)
             whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
+            val southernPlayer: String = "player1"
+            val northernPlayer: String = "player2"
 
             // act
-            val createdGame: KalahaGame = kalahaGameService.create()
+            val createdGame: KalahaGame = kalahaGameService.create(southernPlayer, northernPlayer)
 
             // assert
             assertThat(createdGame).isEqualTo(gameMock)
@@ -59,7 +62,9 @@ internal class KalahaGameServiceTest {
             assertThat(capturedGame.southernPits.asList()).allMatch { it == initialStones }
             assertThat(capturedGame.northernPits).hasSize(pitSize)
             assertThat(capturedGame.northernPits.asList()).allMatch { it == initialStones }
-            assertThat(capturedGame.currentPlayer).isEqualTo(Side.SOUTH)
+            assertThat(capturedGame.currentSide).isEqualTo(Side.SOUTH)
+            assertThat(capturedGame.southernPlayer).isEqualTo(southernPlayer)
+            assertThat(capturedGame.northernPlayer).isEqualTo(northernPlayer)
             verify(mapperMock).toDomain(gameEntityMock)
         }
     }
@@ -140,9 +145,11 @@ internal class KalahaGameServiceTest {
             whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
             whenever(mapperMock.toEntity(gameMock)).thenReturn(gameEntityMock)
             whenever(repositoryMock.save(gameEntityMock)).thenReturn(gameEntityMock)
+            val currentPlayer = "southernPlayer"
+            whenever(gameMock.currentPlayer()).thenReturn(currentPlayer)
 
             // act
-            val game: KalahaGame = kalahaGameService.move(id, pitPosition, "")
+            val game: KalahaGame = kalahaGameService.move(id, pitPosition, currentPlayer)
 
             // assert
             assertThat(game).isEqualTo(gameMock)
@@ -151,6 +158,20 @@ internal class KalahaGameServiceTest {
             verify(gameManagerMock).move(gameMock, pitPosition)
             verify(repositoryMock).save(gameEntityMock)
             verify(mapperMock).toDomain(gameEntityMock)
+        }
+
+        @Test
+        fun `opponent move`() {
+            // arrange
+            whenever(repositoryMock.findById(id)).thenReturn(Optional.of(gameEntityMock))
+            whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
+            val currentPlayer = "northernPlayer"
+            whenever(gameMock.currentPlayer()).thenReturn(currentPlayer)
+
+            // act - assert
+            assertThrows<InvalidMovementException> {
+                kalahaGameService.move(id, pitPosition, "southernPlayer")
+            }
         }
     }
 }

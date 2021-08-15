@@ -8,10 +8,10 @@ package com.bol.gmarchini.kalaha.model
  * Each pit can have any amount of stones.
  */
 data class Table (
-    var southernPits: MutableList<Int>,
-    var northernPits: MutableList<Int>,
-    var southernKalaha: Int,
-    var northernKalaha: Int
+    private val southernPits: MutableList<Int>,
+    private val northernPits: MutableList<Int>,
+    private var southernKalaha: Int,
+    private var northernKalaha: Int
 ) {
     fun getPits(side: Side): MutableList<Int> = when(side) {
         Side.SOUTH -> southernPits
