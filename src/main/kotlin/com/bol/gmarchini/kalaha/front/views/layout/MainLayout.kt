@@ -8,6 +8,7 @@ import com.vaadin.flow.component.ComponentUtil
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.applayout.DrawerToggle
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dependency.CssImport
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.tabs.Tab
@@ -37,6 +38,7 @@ class MainLayout(private val authService: AuthService): AppLayout() {
                 button {
                     text = "logout"
                     className = "logout"
+                    addThemeVariants(ButtonVariant.LUMO_TERTIARY)
                     onLeftClick {
                         authService.logout()
                         UI.getCurrent().navigate(LoginView::class.java)

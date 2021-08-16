@@ -1,0 +1,17 @@
+.centered-content h1 {
+    width: 100%;
+    text-align: center;
+}
+
+.kalaha-container {
+    display: flex;
+    margin-left: 2rem;
+}
+
+.kalaha-text {
+    margin-left: 11rem;
+}
+
+.pit-enabled:hover {
+    cursor: pointer;
+}

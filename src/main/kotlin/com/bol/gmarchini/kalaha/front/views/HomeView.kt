@@ -48,6 +48,11 @@ class HomeView (
                     setItems(games)
                     addThemeVariants(GridVariant.LUMO_NO_BORDER)
                     setHeightFull()
+
+                    asSingleSelect().addValueChangeListener { event ->
+                        val selectedGame: KalahaGame = event.value
+                        navigateToView(GameView::class, selectedGame.id)
+                    }
                 }
             }
         }
