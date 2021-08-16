@@ -35,7 +35,7 @@ build/
 
 # The following files are generated/updated by vaadin-maven-plugin
 node_modules/
-frontend/generated/
+frontend/frontend_old/generated/
 pnpmfile.js
 package-lock.json
 package.json
