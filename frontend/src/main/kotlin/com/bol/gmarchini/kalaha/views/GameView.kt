@@ -105,19 +105,37 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
             )
             UI.getCurrent().page.reload()
         } catch (error: Exception) {
-            Notification(error.message)
+            Notification.show("Sorry, your movement couldn't be executed. Please try again later.")
         }
     }
 
     override fun setParameter(event: BeforeEvent?, gameId: Int?) {
-        val game: KalahaGame? = gameId?.let { gameService.getById(it) }
-        val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
+        try {
+            val game: KalahaGame? = gameId?.let { gameService.getById(it) }
+            val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
 
-        // validate
-        if (game == null || currentUser.username != game.northernPlayer && currentUser.username != game.southernPlayer) {
-            throw Exception("can't find the game")
+            // validate
+            checkNotNull(game)
+            if (currentUser.username != game.northernPlayer && currentUser.username != game.southernPlayer) {
+                Notification.show("Are you sure that you're playing this game?")
+            } else {
+                tableContainer.add(Table(game))
+            }
+        } catch (error: Exception) {
+            Notification.show("Sorry, there was an error loading the game.")
+            // generate an empty table
+            val game: KalahaGame = KalahaGame(
+                currentSide = Side.SOUTH,
+                northernPlayer = "",
+                southernPlayer = "",
+                table = com.bol.gmarchini.kalaha.model.Table(
+                    southernPits = mutableListOf(0, 0, 0, 0, 0, 0),
+                    southernKalaha = 0,
+                    northernPits = mutableListOf(0, 0, 0, 0, 0, 0),
+                    northernKalaha = 0
+                )
+            )
+            tableContainer.add(Table(game))
         }
-
-        tableContainer.add(Table(game))
     }
 }

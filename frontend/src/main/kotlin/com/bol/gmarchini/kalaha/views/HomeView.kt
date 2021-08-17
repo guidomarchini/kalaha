@@ -22,7 +22,7 @@ class HomeView (
     private val userService: UserService
 ): KComposite(){
     private val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
-    private val games: MutableList<KalahaGame> = kalahaGameService.getGamesOfPlayer(currentUser.username).toMutableList()
+    private val games: MutableList<KalahaGame> = getGames()
 
     private lateinit var grid: Grid<KalahaGame>
 
@@ -98,9 +98,18 @@ class HomeView (
 
                     Notification.show("Game created successfully")
                 } catch (error: Exception) {
-                    Notification.show(error.message)
+                    Notification.show("There was an error creating the game. Please try again later")
                 }
             }
+        }
+    }
+
+    private fun getGames(): MutableList<KalahaGame> {
+        return try {
+            kalahaGameService.getGamesOfPlayer(currentUser.username).toMutableList()
+        } catch (error: Exception) {
+            Notification.show("There was a problem fetching your games. Please try again later")
+            mutableListOf()
         }
     }
 }
