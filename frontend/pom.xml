@@ -18,10 +18,10 @@
     </properties>
 
     <dependencies>
-        <!-- backend -->
+        <!-- model -->
         <dependency>
             <groupId>com.bol.gmarchini</groupId>
-            <artifactId>backend</artifactId>
+            <artifactId>model</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -29,6 +29,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.7</version>
         </dependency>
 
         <!-- ui -->
