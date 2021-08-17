@@ -33,12 +33,21 @@ The most interesting part is on the backend:
 * Application: Just the controller.
 
 ## How to run
-Currently the main functionality is in the front end (see TODO section below)
+The ideal project would be to split into 2 different projects: BE and FE.
+
+Because of that, I decided to create two modules: backend and frontend, and they need to be run separately.
+
 > mvn install
 > 
+> cd backend
+>
 > mvn spring-boot:run
+> 
+> cd frontend
+> 
+> mvn sprint-boot:run
 
-Then you can enter `localhost:8080` for the UI, and `localhost:8080/kalaha` for the api.
+Then you can enter `localhost:8081` for the UI, and `localhost:8080/kalaha` for the api.
 
 ### Api
 * `GET /kalaha` gets all kalaha games.
@@ -79,7 +88,6 @@ The admin site contains the list of all the users, and a section to create a new
   * Add a security layer for the controller and dockerize it.
     
 * Frontend
-  * Currently, I'm using the dependency directly because I couldn't find a good library to make rest calls. It would be nice to have a KalahaGameClient and use that instead of the KalahaGameService.
   * Add some styling to every webpage. Specially for the game :)
   * Add logs.
   * Add some more game information.
