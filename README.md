@@ -39,13 +39,9 @@ Because of that, I decided to create two modules: backend and frontend, and they
 
 > mvn install
 > 
-> cd backend
+> mvn -f backend/pom.xml spring-boot:run
 >
-> mvn spring-boot:run
-> 
-> cd frontend
-> 
-> mvn sprint-boot:run
+> mvn -f frontend/pom.xml sprint-boot:run
 
 Then you can enter `localhost:8081` for the UI, and `localhost:8080/kalaha` for the api.
 
@@ -84,11 +80,12 @@ Only accessed by users with ADMIN role.
 The admin site contains the list of all the users, and a section to create a new one.
 
 ## TODOs
-* Backend
-  * Add a security layer for the controller and dockerize it.
+* Backend 
+
+As the Backend and frontend would be different layers,
+we could rely on FE authentication, and the BE can whitelist a range of IPs
+so it can only be reached by the frontend and via VPN.
     
 * Frontend
-  * Add some styling to every webpage. Specially for the game :)
-  * Add logs.
   * Add some more game information.
   * New users creation is so simple...of course a real game would send an email or have oAuth.
