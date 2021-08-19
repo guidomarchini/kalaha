@@ -14,6 +14,8 @@ import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.server.PWA
 import com.vaadin.flow.server.VaadinSession
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @CssImport("./styles/home-view.css")
 @PWA(name = "Kalaha home", shortName = "Home")
@@ -21,6 +23,11 @@ class HomeView (
     private val kalahaGameService: KalahaGameService,
     private val userService: UserService
 ): KComposite(){
+    companion object {
+        @JvmStatic
+        private val logger: Logger = LoggerFactory.getLogger(KalahaGameService::class.java)
+    }
+
     private val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
     private val games: MutableList<KalahaGame> = getGames()
 
@@ -96,8 +103,10 @@ class HomeView (
                     games.add(0, newGame)
                     grid.refresh()
 
+                    logger.info("${currentUser.username} challenged $challengedUser! Game id: ${newGame.id!!}")
                     Notification.show("Game created successfully")
                 } catch (error: Exception) {
+                    logger.error("There was an error creating a new game.", error)
                     Notification.show("There was an error creating the game. Please try again later")
                 }
             }
@@ -108,6 +117,7 @@ class HomeView (
         return try {
             kalahaGameService.getGamesOfPlayer(currentUser.username).toMutableList()
         } catch (error: Exception) {
+            logger.error("There was an error fetching the games.", error)
             Notification.show("There was a problem fetching your games. Please try again later")
             mutableListOf()
         }

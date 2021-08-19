@@ -2,6 +2,7 @@ package com.bol.gmarchini.kalaha.views
 
 import com.bol.gmarchini.kalaha.entity.Role
 import com.bol.gmarchini.kalaha.entity.User
+import com.bol.gmarchini.kalaha.service.KalahaGameService
 import com.bol.gmarchini.kalaha.service.UserService
 import com.github.mvysny.karibudsl.v10.*
 import com.vaadin.flow.component.UI
@@ -15,10 +16,18 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.PasswordField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.server.PWA
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @CssImport("./styles/admin-view.css")
 @PWA(name = "Kalaha admin", shortName = "Admin")
 class AdminView(private val userService: UserService): KComposite() {
+
+    companion object {
+        @JvmStatic
+        private val logger: Logger = LoggerFactory.getLogger(KalahaGameService::class.java)
+    }
+
     private lateinit var grid: Grid<User>
 
     // can't find a way to refresh users :( TODO add DataProvider...
@@ -90,6 +99,7 @@ class AdminView(private val userService: UserService): KComposite() {
                     grid.refresh()
 
                     Notification.show("User saved.")
+                    logger.info("Created new user: $newUserName with role $newUserRole")
                     UI.getCurrent().navigate(AdminView::class.java)
                 } catch (error: Exception) {
                     Notification.show(error.message)

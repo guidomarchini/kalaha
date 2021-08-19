@@ -5,11 +5,47 @@
 
 .kalaha-container {
     display: flex;
-    margin-left: 2rem;
+    padding-left: 2rem;
+    margin-right: 2rem;
+    padding-top: 1rem;
+    background-color: saddlebrown;
+    height: 12rem;
+}
+
+.kalaha-container label {
+    width: 7rem;
+    height: 80%;
+    font-size: 30px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 9rem;
+}
+
+.table {
+    height: 100%;
+}
+
+.table div {
+    height: 50%;
 }
 
 .kalaha-text {
-    margin-left: 11rem;
+    margin-left: 18rem;
+}
+
+.pit {
+    background: darksalmon;
+    border-radius: 50%;
+    height: 70%;
+}
+
+.pit-enabled {
+    background: salmon;
+    color: black;
+}
+
+.pit-disabled {
+    color: azure;
 }
 
 .pit-enabled:hover {

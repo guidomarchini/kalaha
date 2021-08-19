@@ -14,10 +14,17 @@ import com.vaadin.flow.router.BeforeEvent
 import com.vaadin.flow.router.HasUrlParameter
 import com.vaadin.flow.server.PWA
 import com.vaadin.flow.server.VaadinSession
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @CssImport("./styles/game-view.css")
 @PWA(name = "Kalaha game", shortName = "Game")
 class GameView (private val gameService: KalahaGameService): KComposite(), HasUrlParameter<Int> {
+    companion object {
+        @JvmStatic
+        private val logger: Logger = LoggerFactory.getLogger(KalahaGameService::class.java)
+    }
+
     private val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
     private lateinit var tableContainer: Div
 
@@ -31,15 +38,14 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
             }
 
             h3 {
-                className = "com.bol.gmarchini.kalaha-text"
+                className = "kalaha-text"
                 text = "NorthernKalaha"
             }
             tableContainer = div()
             h3 {
-                className = "com.bol.gmarchini.kalaha-text"
+                className = "kalaha-text"
                 text = "SouthernKalaha"
             }
-
 
             h1 {
                 text = "SouthernPlayer"
@@ -51,11 +57,14 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
     inner class Table(game: KalahaGame): KComposite() {
         private val root = ui {
             horizontalLayout {
-                className = "com.bol.gmarchini.kalaha-container"
+                className = "kalaha-container"
                 setWidthFull()
                 alignItems = FlexComponent.Alignment.CENTER
 
-                label(game.table.getKalaha(Side.NORTH).toString())
+                label {
+                    className = "pit"
+                    text = game.table.getKalaha(Side.NORTH).toString()
+                }
                 div {
                     className = "table"
 
@@ -64,6 +73,7 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
 
                 }
                 label {
+                    className = "pit"
                     text = game.table.getKalaha(Side.SOUTH).toString()
                 }
             }
@@ -103,8 +113,10 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
                 pitPosition = index,
                 executingPlayer = currentUser.username
             )
+            logger.info("[$gameId] Movement executed. Player: ${currentUser.username}, pit position: $index")
             UI.getCurrent().page.reload()
         } catch (error: Exception) {
+            logger.error("There was an error executing a movement.", error)
             Notification.show("Sorry, your movement couldn't be executed. Please try again later.")
         }
     }
@@ -117,11 +129,13 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
             // validate
             checkNotNull(game)
             if (currentUser.username != game.northernPlayer && currentUser.username != game.southernPlayer) {
+                logger.warn("An unauthorized user tried to log in a game. GameId: $gameId, user: ${currentUser.username}")
                 Notification.show("Are you sure that you're playing this game?")
             } else {
                 tableContainer.add(Table(game))
             }
         } catch (error: Exception) {
+            logger.error("[$gameId] There was an error loading the game.", error)
             Notification.show("Sorry, there was an error loading the game.")
             // generate an empty table
             val game: KalahaGame = KalahaGame(
