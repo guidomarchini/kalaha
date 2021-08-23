@@ -44,7 +44,8 @@ internal class KalahaGameServiceTest {
         @Test
         fun `creates a new Kalaha Game`() {
             // arrange
-            whenever(repositoryMock.save(any<KalahaGameEntity>())).thenReturn(gameEntityMock)
+            whenever(mapperMock.toEntity(any<KalahaGame>())).thenReturn(gameEntityMock)
+            whenever(repositoryMock.save(gameEntityMock)).thenReturn(gameEntityMock)
             whenever(mapperMock.toDomain(gameEntityMock)).thenReturn(gameMock)
             val southernPlayer: String = "player1"
             val northernPlayer: String = "player2"
@@ -55,13 +56,14 @@ internal class KalahaGameServiceTest {
             // assert
             assertThat(createdGame).isEqualTo(gameMock)
 
-            val argumentCaptor = ArgumentCaptor.forClass(KalahaGameEntity::class.java)
-            verify(repositoryMock).save(argumentCaptor.capture())
-            val capturedGame: KalahaGameEntity = argumentCaptor.value
-            assertThat(capturedGame.southernPits).hasSize(pitSize)
-            assertThat(capturedGame.southernPits.asList()).allMatch { it == initialStones }
-            assertThat(capturedGame.northernPits).hasSize(pitSize)
-            assertThat(capturedGame.northernPits.asList()).allMatch { it == initialStones }
+            verify(repositoryMock).save(gameEntityMock)
+            val argumentCaptor = argumentCaptor<KalahaGame>()
+            verify(mapperMock).toEntity(argumentCaptor.capture())
+            val capturedGame: KalahaGame = argumentCaptor.firstValue
+            assertThat(capturedGame.table.southernPits).hasSize(pitSize)
+            assertThat(capturedGame.table.southernPits).allMatch { it == initialStones }
+            assertThat(capturedGame.table.northernPits).hasSize(pitSize)
+            assertThat(capturedGame.table.northernPits).allMatch { it == initialStones }
             assertThat(capturedGame.currentSide).isEqualTo(Side.SOUTH)
             assertThat(capturedGame.southernPlayer).isEqualTo(southernPlayer)
             assertThat(capturedGame.northernPlayer).isEqualTo(northernPlayer)

@@ -39,5 +39,6 @@ class GameOverManager {
         }
 
         game.table.addStonesToKalaha(opponentsSide, stonesLeft)
+        game.gameOver();
     }
 }

@@ -82,10 +82,10 @@ The admin site contains the list of all the users, and a section to create a new
 ## TODOs
 * Backend 
 
-As the Backend and frontend would be different layers,
+As the Backend and Frontend would be different projects,
 we could rely on FE authentication, and the BE can whitelist a range of IPs
 so it can only be reached by the frontend and via VPN.
     
 * Frontend
-  * Add some more game information.
-  * New users creation is so simple...of course a real game would send an email or have oAuth.
+
+New users creation is so simple...of course a real game would send an email or have oAuth.

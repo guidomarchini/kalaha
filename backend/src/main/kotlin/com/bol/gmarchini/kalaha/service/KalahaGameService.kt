@@ -4,6 +4,7 @@ import com.bol.gmarchini.kalaha.domain.GameManager
 import com.bol.gmarchini.kalaha.domain.exceptions.InvalidMovementException
 import com.bol.gmarchini.kalaha.model.KalahaGame
 import com.bol.gmarchini.kalaha.model.Side
+import com.bol.gmarchini.kalaha.model.Table
 import com.bol.gmarchini.kalaha.persistence.KalahaGameRepository
 import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
 import com.bol.gmarchini.kalaha.service.exceptions.GameNotFoundException
@@ -42,17 +43,20 @@ class KalahaGameService @Autowired constructor(
         northernPlayer: String
     ): KalahaGame {
         logger.info("Creating a new Kalaha game")
-        val newGame: KalahaGameEntity = KalahaGameEntity(
+        val newGame: KalahaGame = KalahaGame(
             currentSide = Side.SOUTH,
             southernPlayer = southernPlayer,
             northernPlayer = northernPlayer,
-            southernPits = IntArray(pitSize) { initialStones },
-            northernPits = IntArray(pitSize) { initialStones },
-            southernKalaha = 0,
-            northernKalaha = 0
+            table = Table(
+                southernPits = MutableList(pitSize) { initialStones },
+                northernPits = MutableList(pitSize) { initialStones },
+                southernKalaha = 0,
+                northernKalaha = 0
+            )
         )
 
-        val savedGame: KalahaGameEntity = this.repository.save(newGame)
+        val asEntity = this.mapper.toEntity(newGame)
+        val savedGame: KalahaGameEntity = this.repository.save(asEntity)
         logger.info("Created Kalaha game. Id: ${savedGame.id}")
 
         return this.mapper.toDomain(savedGame)

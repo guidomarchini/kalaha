@@ -94,5 +94,6 @@ internal class GameOverManagerTest {
         assertThat(table.getPits(currentPlayer.opposite())).isEqualTo(mutableListOf(0, 0, 0))
         assertThat(table.getKalaha(Side.SOUTH)).isEqualTo(2)
         assertThat(table.getKalaha(Side.NORTH)).isEqualTo(0)
+        assertThat(game.ended).isTrue
     }
 }

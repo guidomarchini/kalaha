@@ -50,8 +50,16 @@ class HomeView (
                     addColumns(
                         "currentSide",
                         "southernPlayer",
-                        "northernPlayer"
+                        "northernPlayer",
+                        "createdDate"
                     )
+                    addColumn {
+                        it.currentPlayer()
+                    }.setHeader("Current player")
+                    addColumn {
+                        if (it.ended) "Ended" else "In progress"
+                    }.setHeader("Status")
+
                     setItems(games)
                     addThemeVariants(GridVariant.LUMO_NO_BORDER)
                     setHeightFull()

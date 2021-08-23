@@ -2,6 +2,7 @@ package com.bol.gmarchini.kalaha.utils
 
 import com.bol.gmarchini.kalaha.model.Side
 import com.bol.gmarchini.kalaha.persistence.entity.KalahaGameEntity
+import java.util.*
 
 object KalahaGameEntityBuilder {
     fun sampleKalahaGameEntity (
@@ -9,6 +10,8 @@ object KalahaGameEntityBuilder {
         currentSide: Side = Side.SOUTH,
         southernPlayer: String = "southernPlayer",
         northernPlayer: String = "northernPlayer",
+        ended: Boolean = false,
+        createdDate: Date = Date(),
         southernPits: IntArray = intArrayOf(7, 7, 7),
         northernPits: IntArray = intArrayOf(7, 7, 7),
         southernKalaha: Int = 0,
@@ -19,6 +22,8 @@ object KalahaGameEntityBuilder {
             currentSide = currentSide,
             southernPlayer = southernPlayer,
             northernPlayer = northernPlayer,
+            ended = ended,
+            createdDate = createdDate,
             southernPits = southernPits,
             northernPits = northernPits,
             southernKalaha = southernKalaha,

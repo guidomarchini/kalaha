@@ -1,6 +1,7 @@
 package com.bol.gmarchini.kalaha.persistence.entity
 
 import com.bol.gmarchini.kalaha.model.Side
+import java.util.*
 import javax.persistence.*
 
 /**
@@ -15,6 +16,9 @@ data class KalahaGameEntity (
     val currentSide: Side,
     val southernPlayer: String,
     val northernPlayer: String,
+
+    val ended: Boolean,
+    val createdDate: Date,
 
     // table properties
     val southernPits: IntArray,

@@ -22,6 +22,8 @@ class KalahaGameMapper {
             currentSide = kalahaGameEntity.currentSide,
             southernPlayer = kalahaGameEntity.southernPlayer,
             northernPlayer = kalahaGameEntity.northernPlayer,
+            ended = kalahaGameEntity.ended,
+            createdDate = kalahaGameEntity.createdDate,
             table = Table(
                 southernPits = kalahaGameEntity.southernPits.toMutableList(),
                 northernPits = kalahaGameEntity.northernPits.toMutableList(),
@@ -39,6 +41,8 @@ class KalahaGameMapper {
             currentSide = kalahaGame.currentSide,
             southernPlayer = kalahaGame.southernPlayer,
             northernPlayer = kalahaGame.northernPlayer,
+            ended = kalahaGame.ended,
+            createdDate = kalahaGame.createdDate,
             southernPits = kalahaGame.table.getPits(Side.SOUTH).toIntArray(),
             northernPits = kalahaGame.table.getPits(Side.NORTH).toIntArray(),
             southernKalaha = kalahaGame.table.getKalaha(Side.SOUTH),

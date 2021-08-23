@@ -8,6 +8,7 @@ import com.github.mvysny.karibudsl.v10.*
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.dependency.CssImport
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.router.BeforeEvent
@@ -27,29 +28,27 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
 
     private val currentUser: User = VaadinSession.getCurrent().getAttribute(User::class.java)
     private lateinit var tableContainer: Div
+    private lateinit var northernPlayer: H3
+    private lateinit var southernPlayer: H3
+    private lateinit var currentTurn: H3
 
     private val root = ui {
         verticalLayout {
 
             setWidthFull()
-            h1 {
-                text = "Northern Player"
+            currentTurn = h3 {
+                text = "Current Player: "
                 setWidthFull()
             }
 
-            h3 {
+            northernPlayer = h3 {
                 className = "kalaha-text"
-                text = "NorthernKalaha"
+                text = "Northern Kalaha"
             }
             tableContainer = div()
-            h3 {
+            southernPlayer = h3 {
                 className = "kalaha-text"
-                text = "SouthernKalaha"
-            }
-
-            h1 {
-                text = "SouthernPlayer"
-                setWidthFull()
+                text = "Southern Kalaha"
             }
         }
     }
@@ -133,6 +132,9 @@ class GameView (private val gameService: KalahaGameService): KComposite(), HasUr
                 Notification.show("Are you sure that you're playing this game?")
             } else {
                 tableContainer.add(Table(game))
+                currentTurn.text = "Turn of ${game.currentPlayer()}"
+                northernPlayer.text = "Northern Kalaha: ${game.northernPlayer}"
+                southernPlayer.text = "Southern Kalaha: ${game.southernPlayer}"
             }
         } catch (error: Exception) {
             logger.error("[$gameId] There was an error loading the game.", error)
