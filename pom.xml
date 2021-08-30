@@ -14,12 +14,12 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.bol.gmarchini</groupId>
+	<groupId>gmarchini</groupId>
 	<artifactId>kalaha</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>kalaha</name>
-	<description>Bol coding challenge, by Guido Marchini</description>
+	<description>Kalaha game coding challenge, by Guido Marchini</description>
 
 	<properties>
 		<java.version>11</java.version>
